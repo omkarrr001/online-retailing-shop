@@ -3,12 +3,10 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
 
 # Load model and scaler
 model = joblib.load("model.pkl")
 scaler = joblib.load("scaler.pkl")
-
 
 # Load data
 df = pd.read_csv("online_retail_500.csv")
@@ -52,27 +50,18 @@ elif page == "Predict":
         submitted = st.form_submit_button("Predict Cluster")
 
     if submitted:
-        # Prepare data
+        # Prepare input as DataFrame with correct feature names
         input_df = pd.DataFrame([[quantity, unit_price]], columns=["Quantity", "UnitPrice"])
-        input_scaled = scaler.transform(input_df)
-        cluster = model.predict(input_scaled)[0]
 
-        st.success(f"🎯 Predicted Cluster: {cluster}")
+        st.subheader("🔍 Input Values")
+        st.write(input_df)
 
-        # Cluster plot
-        grouped = df_clean.groupby("CustomerID").agg({
-            "Quantity": "mean",
-            "UnitPrice": "mean"
-        }).reset_index()
+        try:
+            # Scale input features
+            input_scaled = scaler.transform(input_df)
 
-        X_scaled = scaler.transform(grouped[["Quantity", "UnitPrice"]])
-        grouped["Cluster"] = model.predict(X_scaled)
-
-        fig, ax = plt.subplots()
-        scatter = ax.scatter(grouped["Quantity"], grouped["UnitPrice"], c=grouped["Cluster"], cmap='viridis', alpha=0.6)
-        ax.scatter(quantity, unit_price, c='red', s=100, edgecolors='black', label="Your Input")
-        ax.set_xlabel("Avg Quantity")
-        ax.set_ylabel("Avg Unit Price")
-        ax.set_title("Customer Segments")
-        ax.legend()
-        st.pyplot(fig)
+            # Predict cluster
+            cluster = model.predict(input_scaled)[0]
+            st.success(f"🎯 Predicted Cluster: {cluster}")
+        except Exception as e:
+            st.error(f"❌ Error during prediction: {e}")
