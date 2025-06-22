@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 # Load dataset
-df = pd.read_csv(r"C:\Users\saikh\Downloads\online_retail_500.csv")
+df = pd.read_csv(r"C:\Users\narut\Downloads\online_retail_500.csv")
 
 # Drop rows with missing CustomerID
 df = df.dropna(subset=["CustomerID"])
@@ -22,7 +22,7 @@ grouped = df.groupby("CustomerID").agg({
     "InvoiceNo": "nunique"
 }).reset_index()
 
-# Rename columns for clarity
+# Rename columns to match app.py
 grouped.rename(columns={
     "Quantity": "AvgQuantity",
     "UnitPrice": "AvgUnitPrice",
@@ -30,7 +30,7 @@ grouped.rename(columns={
     "InvoiceNo": "InvoiceCount"
 }, inplace=True)
 
-# Features for clustering
+# Features for clustering (must match app.py input)
 features = ["AvgQuantity", "AvgUnitPrice", "TotalSpend", "InvoiceCount"]
 X = grouped[features]
 
@@ -38,7 +38,7 @@ X = grouped[features]
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Train KMeans model
+# Train KMeans
 kmeans = KMeans(n_clusters=4, random_state=42)
 grouped["Cluster"] = kmeans.fit_predict(X_scaled)
 
@@ -46,13 +46,12 @@ grouped["Cluster"] = kmeans.fit_predict(X_scaled)
 joblib.dump(kmeans, "model.pkl")
 joblib.dump(scaler, "scaler.pkl")
 
-# Save clustered data to CSV
+# Save clustered data
 grouped.to_csv("clustered_customers.csv", index=False)
 
-# Print summary
-print("✅ Model trained successfully!")
-print(f"📊 Features used: {features}")
-print("📁 model.pkl and scaler.pkl saved.")
-print("📄 Clustered customer data saved to clustered_customers.csv")
-print("\n🔢 Cluster counts:")
+print("✅ Model trained successfully with extended features.")
+print("📁 model.pkl, scaler.pkl, and clustered_customers.csv saved.")
+print("🔢 Cluster counts:")
 print(grouped["Cluster"].value_counts())
+
+
